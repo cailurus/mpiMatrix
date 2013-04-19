@@ -80,7 +80,6 @@ void main()
  
  
 /*********** 基本操作的算法描述 ****************/
- 
 status CreateSMatrix_RL(RLSMatrix    * matrix)
 //     创建一个稀疏矩阵；
 //     输入行数、列数，支持乱序输入三元组，并计数；
