@@ -1,5 +1,11 @@
-# include <stdio.h>
-# include <stdlib.h>
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <time.h>
+#include <string.h>
+#include <stdio.h>
+#include "mpi.h" 
+
 # define NULL 0
 # define OK 1
 # define ERROR 0
@@ -31,7 +37,7 @@ status CreateSMatrix_RL(RLSMatrix    * matrix);
 //     输入行数、列数，支持乱序输入三元组，并计数；
 //     以行为主序进行重新排列，并记录每行起始位置于matrix->rpos[row]；
 //     若非零元超过 MAXSIZE或行数超过MAXRC，则返回ERROR，否则OK；
- 
+
 void PrintSMatrix_RL(RLSMatrix       * matrix);
 //     输入矩阵，打印出矩阵的行数、列数、非零元个数，以及整个矩阵；
  
