@@ -14,8 +14,7 @@
  
 typedef int status ;
  
- /********** 稀疏矩阵的行逻辑链接的顺序表存储表示 **********/
-  
+ /********** 稀疏矩阵的行逻辑链接的顺序表存储表示 **********/  
 typedef struct       /*  非零元的三元组    */
 {
        int i, j ;   /*    非零元的行下标和列下标    */
@@ -204,8 +203,8 @@ status MultSMatrix_RL(RLSMatrix      * M,RLSMatrix  * N,RLSMatrix * Q)
        }
        return OK;
 }
-//     时间复杂度：O(M->mu*(N->nu+M->nu*N->nu+N->nu));            
 
+//     时间复杂度：O(M->mu*(N->nu+M->nu*N->nu+N->nu));            
 status ResortMatrix(RLSMatrix * matrix){
   
        int num=0,p,q,min,temp;             //     中间变量；
