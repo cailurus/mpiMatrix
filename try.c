@@ -148,9 +148,6 @@ void PrintSMatrix_RL(RLSMatrix       * matrix)
 }
  
 //     时间复杂度：O(mu*nu).
-      
- 
- 
 status MultSMatrix_RL(RLSMatrix      * M,RLSMatrix  * N,RLSMatrix * Q)
 //     输入两个稀疏矩阵M和N，并初始化Q，然后计算M*N的值赋给Q 
 {
@@ -220,7 +217,7 @@ status ResortMatrix(RLSMatrix * matrix){
                             min=q;           //     在乱序的三元表中，始终保证min是较小的行列数的序号；
               }
               temp1=matrix->data[min].i;                        //     交换行值;
-	      matrix->data[min].i=matrix->data[p].i;
+              matrix->data[min].i=matrix->data[p].i;
               matrix->data[p].i=temp;
               temp2=matrix->data[min].j;                        //     交换列值；
               matrix->data[min].j=matrix->data[p].j;
