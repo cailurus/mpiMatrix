@@ -50,7 +50,6 @@ status MultSMatrix_RL(RLSMatrix      * M,RLSMatrix  * N,RLSMatrix * Q);
 //     4.    在M的当前行完成扫描后，将ctemp[ccol]不为0的值，压入到Q矩阵的三元组，累加++Q.tu，若Q.tu大于了MAXSIZE，这返回ERROR。 
  
 /************ main( ) 函数对矩阵乘法的实现  ************/
-  
 void main()
 {
        RLSMatrix * M,* N,* Q;
