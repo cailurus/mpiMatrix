@@ -49,32 +49,55 @@ status MultSMatrix_RL(RLSMatrix      * M,RLSMatrix  * N,RLSMatrix * Q);
 //     4.    在M的当前行完成扫描后，将ctemp[ccol]不为0的值，压入到Q矩阵的三元组，累加++Q.tu，若Q.tu大于了MAXSIZE，这返回ERROR。 
  
 /************ main( ) 函数对矩阵乘法的实现  ************/
-void main()
+void main(int argc, char *argv[])
 {
+       int myid, numprocs;
+       MPI_Status status;
+       float message[20];
+       struct timeval beginTime, endTime;
        RLSMatrix * M,* N,* Q;
+
        if(!(M=(RLSMatrix *)malloc(sizeof(RLSMatrix))))   
               exit(ERROR);
        if(!(N=(RLSMatrix *)malloc(sizeof(RLSMatrix))))    
               exit(ERROR);
        if(!(Q=(RLSMatrix *)malloc(sizeof(RLSMatrix))))    
               exit(ERROR);
+
+       MPI_Init(&argc, &argv);
+       MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+       MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+
+       if(myid == 0){
+              CreateSMatrix_RL(M);
+              CreateSMatrix_RL(N);
+              gettimeofday(&beginTime, NULL);
+
+              message[0] = numprocs;
+              for(int i = 1; i<)
+              gettimeofday(&endTime, NULL);
+              printf("begin %lu, end %lu, Microseconds:%lu\n", beginTime.tv_sec, endTime.tv_sec, (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
+        
+       }
+/*
        if(CreateSMatrix_RL(M)&&CreateSMatrix_RL(N))
        {
               printf("\nput out M:\n");
-              PrintSMatrix_RL(M);           /*    打印出M       */
+              PrintSMatrix_RL(M);           
               printf("\nput out N:\n");
-              PrintSMatrix_RL(N);            /*    打印出N       */
+              PrintSMatrix_RL(N);           
 	      
               if(MultSMatrix_RL(M,N,Q))
               {
                      printf("\n\n\n M  *  N  :\n");
-                     PrintSMatrix_RL(Q);     /*    计算结果       */
+                     PrintSMatrix_RL(Q);    
               }
               else
                      printf("M.mu and N.nu are not mathing\n");
        }
        else
               printf("input error.\n");
+*/
 }
  
  
