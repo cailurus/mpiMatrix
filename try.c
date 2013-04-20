@@ -28,6 +28,8 @@ typedef struct  /*    稀疏矩阵的行逻辑链接的顺序表         */
        int mu,nu,tu;   /*    矩阵的行数、列数、非零元的个数    */
 }RLSMatrix;   /*    R:row     L:logic    S:sequence      */
  
+
+ 
  /********* 基本操作的函数原型的声明 *********/
   
 status CreateSMatrix_RL(RLSMatrix    * matrix);
@@ -99,7 +101,6 @@ void main(int argc, char *argv[])
               printf("input error.\n");
 */
 }
- 
  
 /*********** 基本操作的算法描述 ****************/
 status CreateSMatrix_RL(RLSMatrix    * matrix)
