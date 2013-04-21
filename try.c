@@ -29,7 +29,7 @@ typedef struct  /*    稀疏矩阵的行逻辑链接的顺序表         */
 }RLSMatrix;   /*    R:row     L:logic    S:sequence      */
  
 
- 
+
  /********* 基本操作的函数原型的声明 *********/
   
 status CreateSMatrix_RL(RLSMatrix    * matrix);
@@ -149,6 +149,8 @@ status CreateSMatrix_RL(RLSMatrix    * matrix)
        }
        return OK;
 }
+
+
 //     时间复杂度分析：
 //     1.    输入非零元：O(tu);     2.    重新排列（最坏情况下）;O(tu*(tu-1)) ;    3.    记录行逻辑表：O(mu)
 void PrintSMatrix_RL(RLSMatrix       * matrix)
