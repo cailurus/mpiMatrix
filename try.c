@@ -27,8 +27,6 @@ typedef struct  /*    稀疏矩阵的行逻辑链接的顺序表         */
        int rpos[MAXRC+1];     /*    代表各行第一个非零元的序号表，其值为data的下标   */
        int mu,nu,tu;   /*    矩阵的行数、列数、非零元的个数    */
 }RLSMatrix;   /*    R:row     L:logic    S:sequence      */
- 
-
 
  /********* 基本操作的函数原型的声明 *********/
   
@@ -76,10 +74,8 @@ void main(int argc, char *argv[])
               gettimeofday(&beginTime, NULL);
 
               message[0] = numprocs;
-              for(int i = 1; i<)
               gettimeofday(&endTime, NULL);
               printf("begin %lu, end %lu, Microseconds:%lu\n", beginTime.tv_sec, endTime.tv_sec, (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
-        
        }
 /*
        if(CreateSMatrix_RL(M)&&CreateSMatrix_RL(N))
