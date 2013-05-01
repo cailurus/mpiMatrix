@@ -63,6 +63,8 @@ void main(int argc, char *argv[])
               exit(ERROR);
        if(!(Q=(RLSMatrix *)malloc(sizeof(RLSMatrix))))    
               exit(ERROR);
+       if(!(TMP=(RLSMatrix *)malloc(sizeof(RLSMatrix))))    
+              exit(ERROR);
 
        MPI_Init(&argc, &argv);
        MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
@@ -108,7 +110,27 @@ void main(int argc, char *argv[])
 
               MultSMatrix_RL(M, N, TMP);
               MPI_Reduce(TMP[0], C[0], 20*20, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+              gettimeofday(&endTime, NULL);
               printf("begin %lu, end %lu, Microseconds:%lu\n", beginTime.tv_sec, endTime.tv_sec, (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
+
+       }
+       else{
+              MPI_Recv(message, 20, MPI_FLOAT, 0, TAG_MNT, MPI_COMM_WORLD, &status);
+              m = (int)message[0];
+              n = (int)message[1];
+              t = (int)message[2];
+              if(myid = m -1 )
+                     t = (20 - myid*t)<t?(20 - myid*t):t;
+
+              for(i = 0; i<20; i++){
+                     MPI_Recv(&M[i][0], t, MPI_FLOAT, 0, TAG_M, MPI_COMM_WORLD, &status);
+              }
+
+              MPI_Recv(N[0], t*20, MPI_FLOAT, 0, TAG_N, MPI_COMM_WORLD, &status);
+              MultSMatrix_RL(M, N, TMP);
+
+              MPI_Reduce(TMP[0], C[0], 20*20, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
        }
 /*
        if(CreateSMatrix_RL(M)&&CreateSMatrix_RL(N))
