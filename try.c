@@ -64,17 +64,29 @@ void main(int argc, char *argv[])
        if(!(Q=(RLSMatrix *)malloc(sizeof(RLSMatrix))))    
               exit(ERROR);
 
-       
        MPI_Init(&argc, &argv);
        MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
        MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
+
        if(myid == 0){
+              if(argc < 2){
+                     printf("\nUsage: mpiexec -np ");
+                     MPI_Finalize();
+                     exit(0);
+              }
+              // t is the size for each process.
+              t = 20/m;
+              if((t*m)<20)
+                     t++;
+
               CreateSMatrix_RL(M);
               CreateSMatrix_RL(N);
               gettimeofday(&beginTime, NULL);
 
               message[0] = numprocs;
+              message[1] = 20; // matrix's collom
+              message[2] = t;
               
               gettimeofday(&endTime, NULL);
               printf("begin %lu, end %lu, Microseconds:%lu\n", beginTime.tv_sec, endTime.tv_sec, (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
