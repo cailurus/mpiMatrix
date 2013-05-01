@@ -64,6 +64,7 @@ void main(int argc, char *argv[])
        if(!(Q=(RLSMatrix *)malloc(sizeof(RLSMatrix))))    
               exit(ERROR);
 
+       
        MPI_Init(&argc, &argv);
        MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
        MPI_Comm_rank(MPI_COMM_WORLD, &myid);
@@ -74,6 +75,7 @@ void main(int argc, char *argv[])
               gettimeofday(&beginTime, NULL);
 
               message[0] = numprocs;
+              
               gettimeofday(&endTime, NULL);
               printf("begin %lu, end %lu, Microseconds:%lu\n", beginTime.tv_sec, endTime.tv_sec, (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
        }
