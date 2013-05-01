@@ -55,7 +55,7 @@ void main(int argc, char *argv[])
        MPI_Status status;
        float message[20];
        struct timeval beginTime, endTime;
-       RLSMatrix * M,* N,* Q;
+       RLSMatrix * M,* N,* Q, *TMP;
 
        if(!(M=(RLSMatrix *)malloc(sizeof(RLSMatrix))))   
               exit(ERROR);
@@ -79,16 +79,35 @@ void main(int argc, char *argv[])
               t = 20/m;
               if((t*m)<20)
                      t++;
+              // initialize the two matrix.
 
               CreateSMatrix_RL(M);
               CreateSMatrix_RL(N);
-              gettimeofday(&beginTime, NULL);
 
+              time(&cur);
+              time(&cur);
+
+              gettimeofday(&beginTime, NULL);
               message[0] = numprocs;
               message[1] = 20; // matrix's collom
               message[2] = t;
-              
-              gettimeofday(&endTime, NULL);
+
+              for(i = 1; i<m; i++){
+                     MPI_Send(message, 20, MPI_FLOAT, i, TAG_MNT, MPI_COMM_WORLD);
+              }
+
+              for(i = 0; i<n; i++){
+                     for( j = 1; j<m; j++)
+                            MPI_Send(&(M[i][j*t]), (20-j*t)<t?(20-j*t):t, MPI_FLOAT, j, TAG_M, MPI_COMM_WORLD);
+              }
+
+              for(i = 1; i<m; i++){
+                     count = ((20-i*t)<t?(20-i*t):t)*n;
+                     MPI_Send(N[i*t], count, MPI_FLOAT, i, TAG_N, MPI_COMM_WORLD);
+              }
+
+              MultSMatrix_RL(M, N, TMP);
+              MPI_Reduce(TMP[0], C[0], 20*20, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
               printf("begin %lu, end %lu, Microseconds:%lu\n", beginTime.tv_sec, endTime.tv_sec, (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
        }
 /*
