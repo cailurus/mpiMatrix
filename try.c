@@ -12,8 +12,12 @@
 # define MAXSIZE 100 /*  矩阵中非零元的最大值 */
 # define MAXRC 10             /*  矩阵的最大行值  */
  
+# define TAG_M 4
+# define TAG_N 5
+# define TAG_MNT 3
 typedef int status ;
- 
+int t; // t stores the number of rows or columns processed by each process.
+
  /********** 稀疏矩阵的行逻辑链接的顺序表存储表示 **********/  
 typedef struct       /*  非零元的三元组    */
 {
@@ -51,9 +55,12 @@ status MultSMatrix_RL(RLSMatrix      * M,RLSMatrix  * N,RLSMatrix * Q);
 /************ main( ) 函数对矩阵乘法的实现  ************/
 void main(int argc, char *argv[])
 {
+       int i, j;
+       int count;
        int myid, numprocs;
        MPI_Status status;
        float message[20];
+       time_t cur = 0;
        struct timeval beginTime, endTime;
        RLSMatrix * M,* N,* Q, *TMP;
 
@@ -78,8 +85,8 @@ void main(int argc, char *argv[])
                      exit(0);
               }
               // t is the size for each process.
-              t = 20/m;
-              if((t*m)<20)
+              t = 20/numprocs;
+              if((t*numprocs)<20)
                      t++;
               // initialize the two matrix.
 
@@ -94,22 +101,23 @@ void main(int argc, char *argv[])
               message[1] = 20; // matrix's collom
               message[2] = t;
 
-              for(i = 1; i<m; i++){
+              for(i = 1; i<numprocs; i++){
                      MPI_Send(message, 20, MPI_FLOAT, i, TAG_MNT, MPI_COMM_WORLD);
               }
 
-              for(i = 0; i<n; i++){
-                     for( j = 1; j<m; j++)
+              for(i = 0; i<20; i++){
+                     for( j = 1; j<numprocs; j++){
                             MPI_Send(&(M[i][j*t]), (20-j*t)<t?(20-j*t):t, MPI_FLOAT, j, TAG_M, MPI_COMM_WORLD);
+                     }
               }
 
-              for(i = 1; i<m; i++){
-                     count = ((20-i*t)<t?(20-i*t):t)*n;
+              for(i = 1; i<numprocs; i++){
+                     count = ((20-i*t)<t?(20-i*t):t)*20;
                      MPI_Send(N[i*t], count, MPI_FLOAT, i, TAG_N, MPI_COMM_WORLD);
               }
 
               MultSMatrix_RL(M, N, TMP);
-              MPI_Reduce(TMP[0], C[0], 20*20, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+              MPI_Reduce(TMP[0], Q[0], 20*20, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
 
               gettimeofday(&endTime, NULL);
               printf("begin %lu, end %lu, Microseconds:%lu\n", beginTime.tv_sec, endTime.tv_sec, (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
@@ -117,10 +125,10 @@ void main(int argc, char *argv[])
        }
        else{
               MPI_Recv(message, 20, MPI_FLOAT, 0, TAG_MNT, MPI_COMM_WORLD, &status);
-              m = (int)message[0];
+              numprocs = (int)message[0];
               n = (int)message[1];
               t = (int)message[2];
-              if(myid = m -1 )
+              if(myid = numprocs -1 )
                      t = (20 - myid*t)<t?(20 - myid*t):t;
 
               for(i = 0; i<20; i++){
