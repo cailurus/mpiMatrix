@@ -17,12 +17,12 @@
 # define TAG_MNT 3
 typedef int status ;
 int t; // t stores the number of rows or columns processed by each process.
-
+int n;
  /********** 稀疏矩阵的行逻辑链接的顺序表存储表示 **********/  
 typedef struct       /*  非零元的三元组    */
 {
        int i, j ;   /*    非零元的行下标和列下标    */
-       int e ;
+       float e ;
 }Triple;    
  
 typedef struct  /*    稀疏矩阵的行逻辑链接的顺序表         */
@@ -76,9 +76,7 @@ void main(int argc, char *argv[])
        MPI_Init(&argc, &argv);
        MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
        MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-       
 
-/*
        if(myid == 0){
               if(argc < 2){
                      printf("\nUsage: mpiexec -np ");
@@ -106,19 +104,17 @@ void main(int argc, char *argv[])
                      MPI_Send(message, 20, MPI_FLOAT, i, TAG_MNT, MPI_COMM_WORLD);
               }
 
-              for(i = 0; i<20; i++){
-                     for( j = 1; j<numprocs; j++){
-                            MPI_Send(&(M[i][j*t]), (20-j*t)<t?(20-j*t):t, MPI_FLOAT, j, TAG_M, MPI_COMM_WORLD);
-                     }
+              for( j = 1; j<numprocs; j++){
+                     MPI_Send(&(M->data[j*t].e), (20-j*t)<t?(20-j*t):t, MPI_FLOAT, j, TAG_M, MPI_COMM_WORLD);
               }
-
+              
               for(i = 1; i<numprocs; i++){
                      count = ((20-i*t)<t?(20-i*t):t)*20;
-                     MPI_Send(N[i*t], count, MPI_FLOAT, i, TAG_N, MPI_COMM_WORLD);
+                     MPI_Send(&(N->data[i*t].e), count, MPI_FLOAT, i, TAG_N, MPI_COMM_WORLD);
               }
 
               MultSMatrix_RL(M, N, TMP);
-              MPI_Reduce(TMP[0], Q[0], 20*20, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+              MPI_Reduce(&(TMP->data[0]), &(Q->data[0]), 20*20, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
 
               gettimeofday(&endTime, NULL);
               printf("begin %lu, end %lu, Microseconds:%lu\n", beginTime.tv_sec, endTime.tv_sec, (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
@@ -133,14 +129,14 @@ void main(int argc, char *argv[])
                      t = (20 - myid*t)<t?(20 - myid*t):t;
 
               for(i = 0; i<20; i++){
-                     MPI_Recv(&M[i][0], t, MPI_FLOAT, 0, TAG_M, MPI_COMM_WORLD, &status);
+                     MPI_Recv(&M[i], t, MPI_FLOAT, 0, TAG_M, MPI_COMM_WORLD, &status);
               }
 
-              MPI_Recv(N[0], t*20, MPI_FLOAT, 0, TAG_N, MPI_COMM_WORLD, &status);
+              MPI_Recv(&N[0], t*20, MPI_FLOAT, 0, TAG_N, MPI_COMM_WORLD, &status);
               MultSMatrix_RL(M, N, TMP);
 
-              MPI_Reduce(TMP[0], C[0], 20*20, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-       }*/
+              MPI_Reduce(&(TMP[0]), &Q[0], 20*20, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+       }
 /*
        if(CreateSMatrix_RL(M)&&CreateSMatrix_RL(N))
        {
