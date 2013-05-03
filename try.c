@@ -76,8 +76,9 @@ void main(int argc, char *argv[])
        MPI_Init(&argc, &argv);
        MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
        MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+       
 
-
+/*
        if(myid == 0){
               if(argc < 2){
                      printf("\nUsage: mpiexec -np ");
@@ -139,7 +140,7 @@ void main(int argc, char *argv[])
               MultSMatrix_RL(M, N, TMP);
 
               MPI_Reduce(TMP[0], C[0], 20*20, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-       }
+       }*/
 /*
        if(CreateSMatrix_RL(M)&&CreateSMatrix_RL(N))
        {
