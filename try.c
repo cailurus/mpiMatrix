@@ -22,7 +22,7 @@ int n;
 typedef struct       /*  非零元的三元组    */
 {
        int i, j ;   /*    非零元的行下标和列下标    */
-       float e ;
+       int e ;
 }Triple;    
  
 typedef struct  /*    稀疏矩阵的行逻辑链接的顺序表         */
@@ -62,7 +62,7 @@ void main(int argc, char *argv[])
        float message[20];
        time_t cur = 0;
        struct timeval beginTime, endTime;
-       RLSMatrix * M,* N,* Q, *TMP;
+       RLSMatrix * M, * N, * Q, * TMP;
 
        if(!(M=(RLSMatrix *)malloc(sizeof(RLSMatrix))))   
               exit(ERROR);
@@ -72,6 +72,7 @@ void main(int argc, char *argv[])
               exit(ERROR);
        if(!(TMP=(RLSMatrix *)malloc(sizeof(RLSMatrix))))    
               exit(ERROR);
+       
 
        MPI_Init(&argc, &argv);
        MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
@@ -83,17 +84,17 @@ void main(int argc, char *argv[])
                      MPI_Finalize();
                      exit(0);
               }
+
+              CreateSMatrix_RL(M)&&CreateSMatrix_RL(N);
               // t is the size for each process.
               t = 20/numprocs;
+              printf("%d\n", numprocs);
               if((t*numprocs)<20)
                      t++;
               // initialize the two matrix.
               printf("This is the frist.");
-
-              CreateSMatrix_RL(M);
-              printf("This is the second.");
-              CreateSMatrix_RL(N);
-              //gettimeofday(&beginTime, NULL);
+              gettimeofday(&beginTime, NULL);
+              printf("%lu", beginTime.tv_sec);
               message[0] = numprocs;
               message[1] = 20; // matrix's collom
               message[2] = t;
@@ -103,37 +104,40 @@ void main(int argc, char *argv[])
               }
 
               for( j = 1; j<numprocs; j++){
-                     MPI_Send(&(M->data[j*t].e), (20-j*t)<t?(20-j*t):t, MPI_FLOAT, j, TAG_M, MPI_COMM_WORLD);
+                     MPI_Send(&(M->data[j*t].e), (20-j*t)<t?(20-j*t):t, MPI_INT, j, TAG_M, MPI_COMM_WORLD);
               }
-              
+
               for(i = 1; i<numprocs; i++){
                      count = ((20-i*t)<t?(20-i*t):t)*20;
-                     MPI_Send(&(N->data[i*t].e), count, MPI_FLOAT, i, TAG_N, MPI_COMM_WORLD);
+                     MPI_Send(&(N->data[i*t].e), count, MPI_INT, i, TAG_N, MPI_COMM_WORLD);
               }
+              printf("This is the second.\n");
 
               MultSMatrix_RL(M, N, TMP);
-              MPI_Reduce(&(TMP->data[0]), &(Q->data[0]), 20*20, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+              printf("sdfsdf\n");
+              MPI_Reduce(&(TMP->data[0]), &(Q->data[0]), 20*20, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
               gettimeofday(&endTime, NULL);
+              printf("%lu", endTime.tv_sec);
               printf("begin %lu, end %lu, Microseconds:%lu\n", beginTime.tv_sec, endTime.tv_sec, (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
 
        }
        else{
-              MPI_Recv(message, 20, MPI_FLOAT, 0, TAG_MNT, MPI_COMM_WORLD, &status);
+
+              MPI_Recv(message, 20, MPI_INT, 0, TAG_MNT, MPI_COMM_WORLD, &status);
               numprocs = (int)message[0];
               n = (int)message[1];
               t = (int)message[2];
               if(myid = numprocs -1 )
                      t = (20 - myid*t)<t?(20 - myid*t):t;
-
               for(i = 0; i<20; i++){
-                     MPI_Recv(&M[i], t, MPI_FLOAT, 0, TAG_M, MPI_COMM_WORLD, &status);
+                     MPI_Recv(&M[i], t, MPI_INT, 0, TAG_M, MPI_COMM_WORLD, &status);
               }
 
-              MPI_Recv(&N[0], t*20, MPI_FLOAT, 0, TAG_N, MPI_COMM_WORLD, &status);
+              MPI_Recv(&N[0], t*20, MPI_INT, 0, TAG_N, MPI_COMM_WORLD, &status);
               MultSMatrix_RL(M, N, TMP);
 
-              MPI_Reduce(&(TMP[0]), &Q[0], 20*20, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+              MPI_Reduce(&(TMP[0]), &Q[0], 20*20, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
        }
 /*
        if(CreateSMatrix_RL(M)&&CreateSMatrix_RL(N))
@@ -141,7 +145,7 @@ void main(int argc, char *argv[])
               printf("\nput out M:\n");
               PrintSMatrix_RL(M);           
               printf("\nput out N:\n");
-              PrintSMatrix_RL(N);           
+              PrintSMatrix_RL(N);          0 
 	      
               if(MultSMatrix_RL(M,N,Q))
               {
