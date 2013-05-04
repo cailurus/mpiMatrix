@@ -114,7 +114,6 @@ void main(int argc, char *argv[])
               printf("This is the second.\n");
 
               MultSMatrix_RL(M, N, TMP);
-              printf("sdfsdf\n");
               MPI_Reduce(&(TMP->data[0]), &(Q->data[0]), 20*20, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
               gettimeofday(&endTime, NULL);
