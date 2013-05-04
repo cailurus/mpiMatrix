@@ -78,7 +78,7 @@ void main(int argc, char *argv[])
        MPI_Comm_rank(MPI_COMM_WORLD, &myid);
 
        if(myid == 0){
-              if(argc < 2){
+              if(argc < 1){
                      printf("\nUsage: mpiexec -np ");
                      MPI_Finalize();
                      exit(0);
@@ -88,14 +88,12 @@ void main(int argc, char *argv[])
               if((t*numprocs)<20)
                      t++;
               // initialize the two matrix.
+              printf("This is the frist.");
 
               CreateSMatrix_RL(M);
+              printf("This is the second.");
               CreateSMatrix_RL(N);
-
-              time(&cur);
-              time(&cur);
-
-              gettimeofday(&beginTime, NULL);
+              //gettimeofday(&beginTime, NULL);
               message[0] = numprocs;
               message[1] = 20; // matrix's collom
               message[2] = t;
