@@ -9,8 +9,8 @@
 # define NULL 0
 # define OK 1
 # define ERROR 0
-# define MAXSIZE 100 /*  矩阵中非零元的最大值 */
-# define MAXRC 10             /*  矩阵的最大行值  */
+# define MAXSIZE 1000 /*  矩阵中非零元的最大值 */
+# define MAXRC 1000             /*  矩阵的最大行值  */
  
 # define TAG_M 4
 # define TAG_N 5
@@ -87,16 +87,16 @@ void main(int argc, char *argv[])
 
               CreateSMatrix_RL(M)&&CreateSMatrix_RL(N);
               // t is the size for each process.
-              t = 20/numprocs;
+              t = 4/numprocs;
               printf("%d\n", numprocs);
-              if((t*numprocs)<20)
+              if((t*numprocs)<4)
                      t++;
               // initialize the two matrix.
               printf("This is the frist.");
               gettimeofday(&beginTime, NULL);
               printf("%lu", beginTime.tv_sec);
               message[0] = numprocs;
-              message[1] = 20; // matrix's collom
+              message[1] = 4; // matrix's collom
               message[2] = t;
 
               for(i = 1; i<numprocs; i++){
@@ -104,39 +104,40 @@ void main(int argc, char *argv[])
               }
 
               for( j = 1; j<numprocs; j++){
-                     MPI_Send(&(M->data[j*t].e), (20-j*t)<t?(20-j*t):t, MPI_INT, j, TAG_M, MPI_COMM_WORLD);
+                     MPI_Send(&(M->data[j*t].e), (4-j*t)<t?(4-j*t):t, MPI_INT, j, TAG_M, MPI_COMM_WORLD);
               }
 
               for(i = 1; i<numprocs; i++){
-                     count = ((20-i*t)<t?(20-i*t):t)*20;
+                     count = ((4-i*t)<t?(4-i*t):t)*4;
                      MPI_Send(&(N->data[i*t].e), count, MPI_INT, i, TAG_N, MPI_COMM_WORLD);
               }
               printf("This is the second.\n");
 
               MultSMatrix_RL(M, N, TMP);
-              MPI_Reduce(&(TMP->data[0]), &(Q->data[0]), 20*20, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-
+              MPI_Reduce(TMP->data, Q->data, 1*1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+              printf("this is right/\n");
               gettimeofday(&endTime, NULL);
-              printf("%lu", endTime.tv_sec);
+              printf("%lu\n", endTime.tv_sec);
+
+
+
               printf("begin %lu, end %lu, Microseconds:%lu\n", beginTime.tv_sec, endTime.tv_sec, (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
 
        }
        else{
-
               MPI_Recv(message, 20, MPI_INT, 0, TAG_MNT, MPI_COMM_WORLD, &status);
               numprocs = (int)message[0];
               n = (int)message[1];
               t = (int)message[2];
               if(myid = numprocs -1 )
-                     t = (20 - myid*t)<t?(20 - myid*t):t;
-              for(i = 0; i<20; i++){
+                     t = (4 - myid*t)<t?(4 - myid*t):t;
+              for(i = 0; i<4; i++){
                      MPI_Recv(&M[i], t, MPI_INT, 0, TAG_M, MPI_COMM_WORLD, &status);
               }
-
-              MPI_Recv(&N[0], t*20, MPI_INT, 0, TAG_N, MPI_COMM_WORLD, &status);
+              MPI_Recv(&N[0], t*4, MPI_INT, 0, TAG_N, MPI_COMM_WORLD, &status);
               MultSMatrix_RL(M, N, TMP);
 
-              MPI_Reduce(&(TMP[0]), &Q[0], 20*20, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+              MPI_Reduce(&(TMP[0]), &Q[0], 4*4, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
        }
 /*
        if(CreateSMatrix_RL(M)&&CreateSMatrix_RL(N))
