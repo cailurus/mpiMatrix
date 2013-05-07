@@ -119,6 +119,7 @@ void main(int argc, char *argv[])
               gettimeofday(&endTime, NULL);
               printf("%lu\n", endTime.tv_sec);
 
+
               printf("begin %lu, end %lu, Microseconds:%lu\n", beginTime.tv_sec, endTime.tv_sec, (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
 
        }
