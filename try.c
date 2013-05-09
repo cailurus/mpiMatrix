@@ -25,6 +25,8 @@ typedef struct       /*  非零元的三元组    */
        int e ;
 }Triple;    
  
+
+ 
 typedef struct  /*    稀疏矩阵的行逻辑链接的顺序表         */
 {
        Triple data[MAXSIZE+1];    /*    非零三元组表，data[0]未用，以下定义的数组都是从1开始 */
