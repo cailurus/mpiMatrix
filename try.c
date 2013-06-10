@@ -88,7 +88,7 @@ void main(int argc, char *argv[])
               // t is the size for each process.
               t = 4/numprocs;
               printf("%d\n", numprocs);
-              if((t*numprocs)<4)
+              if((t * numprocs)<4)
                      t++;
               // initialize the two matrix.
               printf("This is the frist.");
@@ -117,7 +117,6 @@ void main(int argc, char *argv[])
               printf("this is right/\n");
               gettimeofday(&endTime, NULL);
               printf("%lu\n", endTime.tv_sec);
-
 
               printf("begin %lu, end %lu, Microseconds:%lu\n", beginTime.tv_sec, endTime.tv_sec, (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
 
