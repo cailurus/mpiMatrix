@@ -24,9 +24,7 @@ typedef struct       /*  非零元的三元组    */
        int i, j ;   /*    非零元的行下标和列下标    */
        int e ;
 }Triple;    
- 
 
- 
 typedef struct  /*    稀疏矩阵的行逻辑链接的顺序表         */
 {
        Triple data[MAXSIZE+1];    /*    非零三元组表，data[0]未用，以下定义的数组都是从1开始 */
@@ -35,7 +33,6 @@ typedef struct  /*    稀疏矩阵的行逻辑链接的顺序表         */
 }RLSMatrix;   /*    R:row     L:logic    S:sequence      */
 
  /********* 基本操作的函数原型的声明 *********/
-  
 status CreateSMatrix_RL(RLSMatrix    * matrix);
 //     创建一个稀疏矩阵；
 //     输入行数、列数，支持乱序输入三元组，并计数；
@@ -87,7 +84,7 @@ void main(int argc, char *argv[])
                      exit(0);
               }
 
-              CreateSMatrix_RL(M)&&CreateSMatrix_RL(N);
+              CreateSMatrix_RL(M) && CreateSMatrix_RL(N);
               // t is the size for each process.
               t = 4/numprocs;
               printf("%d\n", numprocs);
