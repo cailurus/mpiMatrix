@@ -146,7 +146,6 @@ void main(int argc, char * args[]) {
             MPI_Finalize();
             exit(0);
         }
-        
         /* calculate the column size for each process */
         t = n/m;
         if ((t*m)<n) t++;
