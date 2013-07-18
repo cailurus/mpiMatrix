@@ -31,8 +31,8 @@ float** A; /* Pointer to Matrix A */
 float** B; /* Pointer to Matrix B */
 float** C; /* Pointer to Matrix C */
 float** TMP;
-FILE* aa;
-FILE* bb;
+FILE* fa;
+FILE* fb;
 
 int displayMatrix(float** p, const char * matrixName, int row, int col) {
     
@@ -75,10 +75,6 @@ int madd(float** ma, float** mb, int row, int col) {
             ma[i][j] += mb[i][j];
         }
     }
-}
-
-char *ReadData(FILE *fp, char *buf) {
-    return fgets(buf, LINE, fp);
 }
 
 void main(int argc, char * args[]) {
@@ -137,12 +133,29 @@ void main(int argc, char * args[]) {
         /* initialize the matrix A & B with random floating-point numbers */
         time(&cur);
         //seed = (unsigned)cur;
-        aa=fopen("a","r");
-        char charTemp[] = " ";
-        while((intTemp = fgetc(aa))!=EOF){
-            
+        // arguments for array arrangement
+        char seps[] = " ";
+        char *token;
+        int arr[3];
+
+        //arguments for read line by line
+        char * line = NULL;
+        size_t len = 0;
+        ssize_t read;
+        fa = fopen("a", "r");
+        fb = fopen("b", "r");
+
+        while((read = getline(&line, &len, fa)) != -1){
+            int x = 0;
+            token = strtok(line, seps);
+            while(token != NULL){
+                arr[x++] = atoi(token);
+                A[arr[0]][arr[1]] = arr[2];
+                token = strtok(NULL, seps);
+            }
         }
-        
+
+        /*
         for(i=0; i<n; i++) {
             for(j=0; j<n; j++) {
                 a = (float)rand_r(&seed);
@@ -160,7 +173,6 @@ void main(int argc, char * args[]) {
                 B[i][j] = a/b;
             }
         } /* end of initialization of matrix A & B */
-        
         gettimeofday(&beginTime, NULL);
         
         message[0]=m;
