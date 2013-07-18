@@ -31,6 +31,8 @@ float** A; /* Pointer to Matrix A */
 float** B; /* Pointer to Matrix B */
 float** C; /* Pointer to Matrix C */
 float** TMP;
+FILE* aa;
+FILE* bb;
 
 int displayMatrix(float** p, const char * matrixName, int row, int col) {
     
@@ -63,37 +65,6 @@ int mmult(float** ma, float** mb, float** mc, int arow, int acol) {
     }
 }
 
-int value(float **mc, int i, int j){
-    int k=1;
-    while(k <= mc[0][2] && !(mc[k][0]==i && mc[k][1]==j))
-        k++;
-    if(mc[k][0]==i && mc[k][1]==j)
-        return(mc[k][2]);
-    else
-        return(0);
-}
-
-void multi(float **ma, float **mb, float **mc){
-    int i, j, p, s, q;
-    p = 1;
-    for(i = 1; i<=mc[0][0]; i++){
-        for(j = 1; j <= mb[0][1]; j++){
-            s = 0;
-            for(q = 1; q <= ma[0][1]; q++)
-                s = s + value(ma, i, q) * value(mb, q, j);
-            if(s != 0){
-                mc[p][0] = i;
-                mc[p][1] = j;
-                mc[p][2] = p - 1;
-                p++;
-            }
-        }
-        mc[0][0] = ma[0][0];
-        mc[0][1] = mb[0][1];
-        mc[0][2] = p - 1;
-    }
-}
-
 /* calculate addition of two matrices */
 int madd(float** ma, float** mb, int row, int col) {
     
@@ -113,6 +84,7 @@ void main(int argc, char * args[]) {
     int ci, cj;
     int myrank;
     time_t cur = 0;
+    unsigned seed = 0;
     struct timeval beginTime, endTime;
     MPI_Status status; 
     float message[20];
@@ -143,9 +115,10 @@ void main(int argc, char * args[]) {
         n = strtol(args[1], 0, 0);
         if(n<=0 || m>n ) {
             perror("The dimension input is not illegal. The correct value is 0<m<n. \n");
-            MPI_Finalize();
+            MPI_Finalize(); 
             exit(0);
         }
+        
         /* calculate the column size for each process */
         t = n/m;
         if ((t*m)<n) t++;
@@ -156,61 +129,34 @@ void main(int argc, char * args[]) {
         createTdArray(sizeof(float), n, n, &B);
         createTdArray(sizeof(float), n, n, &C);
         createTdArray(sizeof(float), n, n, &TMP);
-
-        A[0][0] = 4;
-        A[0][1] = 3;
-        A[0][2] = 3;
-
-        A[1][0] = 2;
-        A[1][1] = 1;
-        A[1][2] = 1;
-
-        A[2][0] = 3;
-        A[2][1] = 2;
-        A[2][2] = 2;
-
-        A[3][0] = 4;
-        A[3][1] = 3;
-        A[3][2] = 3;
-
-        B[0][0] = 3;
-        B[0][1] = 3;
-        B[0][2] = 2;
-
-        B[1][0] = 2;
-        B[1][1] = 2;
-        B[1][2] = 1;
-
-        B[2][0] = 3;
-        B[2][1] = 3;
-        B[2][2] = 2;
-        time(&cur);
-        /* initialize the matrix A & B with random floating-point numbers */
         
+        /* initialize the matrix A & B with random floating-point numbers */
         time(&cur);
-        seed = (unsigned)cur;
-        for(i=0; i<n; i++) { 
-            for(j=0; j<n; j++) {
-#if REAL_RANDOM
-                a = (float)rand_r(&seed);
-                b = (float)rand_r(&seed);
-                A[i][j] = a/b;
-                a = (float)rand_r(&seed);
-                b = (float)rand_r(&seed);
-                B[i][j] = a/b;
-#else
-                a = (float)random();
-                b = (float)random();
-                A[i][j] = a/b;
-                a = (float)random();
-                b = (float)random();
-                B[i][j] = a/b;
-#endif
-            }
+        //seed = (unsigned)cur;
+        aa=fopen("a","r");
+        int intTemp;
+        while((intTemp = fgetc(aa))!=EOF){
+            
         }
-         /* end of initialization of matrix A & B */
 
-
+        for(i=0; i<n; i++) {
+            for(j=0; j<n; j++) {
+                a = (float)rand_r(&seed);
+                b = (float)rand_r(&seed);
+                A[i][j] = a/b;
+                a = (float)rand_r(&seed);
+                b = (float)rand_r(&seed);
+                
+                B[i][j] = a/b;
+                a = (float)random();
+                b = (float)random();
+                A[i][j] = a/b;
+                a = (float)random();
+                b = (float)random();
+                B[i][j] = a/b;
+            }
+        } /* end of initialization of matrix A & B */
+        
         gettimeofday(&beginTime, NULL);
         
         message[0]=m;
@@ -229,12 +175,12 @@ void main(int argc, char * args[]) {
         
         /* Send parts of B to other corresponding processes */
         for (i=1; i<m; i++) {
-            count = ( (n-i*t)<t?(n-i*t):t )*n;a
+            count = ( (n-i*t)<t?(n-i*t):t )*n;
             MPI_Send(B[i*t], count, MPI_FLOAT, i, TAG_BI, MPI_COMM_WORLD);
         }
         
         /* calculate C0 */
-        multi(A, B, TMP);
+        mmult(A, B, TMP, n, t);
         //MPI_Barrier(MPI_COMM_WORLD);
 //        for(i=1; i<m; i++) {
 //            MPI_Recv(TMP[0], n*n, MPI_FLOAT, MPI_ANY_SOURCE, TAG_CI, MPI_COMM_WORLD, &status);
@@ -243,10 +189,8 @@ void main(int argc, char * args[]) {
 //                madd(C, TMP, n, n);
 //        }
         MPI_Reduce(TMP[0], C[0], n*n, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-        printf("---1-");
-
-        printf("A %f\n", 3*.4+value(A, 1, 1));
-        printf("----");
+        
+        
         gettimeofday(&endTime, NULL);
         printf("Microseconds:%lu\n", (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
         
@@ -279,7 +223,8 @@ void main(int argc, char * args[]) {
         MPI_Recv(B[0], t*n, MPI_FLOAT, 0, TAG_BI, MPI_COMM_WORLD, &status);
         
         /* calculate Cj */
-        multi(A, B, TMP);
+        mmult(A, B, TMP, n, t);
+        
         /* send the result back to P0 */
         //MPI_Barrier(MPI_COMM_WORLD);
         MPI_Reduce(TMP[0], C[0], n*n, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
