@@ -77,6 +77,10 @@ int madd(float** ma, float** mb, int row, int col) {
     }
 }
 
+char *ReadData(FILE *fp, char *buf) {
+    return fgets(buf, LINE, fp);
+}
+
 void main(int argc, char * args[]) {
     
     int i, j, k;
@@ -134,11 +138,11 @@ void main(int argc, char * args[]) {
         time(&cur);
         //seed = (unsigned)cur;
         aa=fopen("a","r");
-        int intTemp;
+        char charTemp[] = " ";
         while((intTemp = fgetc(aa))!=EOF){
             
         }
-
+        
         for(i=0; i<n; i++) {
             for(j=0; j<n; j++) {
                 a = (float)rand_r(&seed);
