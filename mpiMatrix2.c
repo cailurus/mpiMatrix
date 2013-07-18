@@ -1,10 +1,3 @@
-/* 
- * File    : mpiMatrix1.c
- * Author  : Yanlong Yin (yyin2@iit.edu)
- *
- * This file 
- */
-
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -144,17 +137,29 @@ void main(int argc, char * args[]) {
         ssize_t read;
         fa = fopen("a", "r");
         fb = fopen("b", "r");
-
         while((read = getline(&line, &len, fa)) != -1){
             int x = 0;
             token = strtok(line, seps);
             while(token != NULL){
                 arr[x++] = atoi(token);
-                A[arr[0]][arr[1]] = arr[2];
                 token = strtok(NULL, seps);
             }
+            A[arr[0]][arr[1]] = arr[2];
         }
 
+        while((read = getline(&line, &len, fb)) != -1){
+            int x = 0;
+            token = strtok(line, seps);
+            while(token != NULL){
+                arr[x++] = atoi(token);
+                token = strtok(NULL, seps);
+            }
+            B[arr[0]][arr[1]] = arr[2];
+        }
+
+        puts("first");
+            displayMatrix(A, "A", n, n);
+            displayMatrix(B, "B", n, n);
         /*
         for(i=0; i<n; i++) {
             for(j=0; j<n; j++) {
@@ -209,12 +214,14 @@ void main(int argc, char * args[]) {
         
         gettimeofday(&endTime, NULL);
         printf("Microseconds:%lu\n", (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
-        
+        /*
         if(n<=10) {
             displayMatrix(A, "A", n, n);
             displayMatrix(B, "B", n, n);
             displayMatrix(C, "C", n, n);
         }
+        */
+        displayMatrix(C, "C", n, n);
     } /* end of 'rank==0' */
     else { /* process of which rank is greater than 0 */
         /* rank>0, do the multiplication */
