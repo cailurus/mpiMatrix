@@ -78,7 +78,7 @@ void main(int argc, char * args[]) {
     int myrank;
     time_t cur = 0;
     unsigned seed = 0;
-    struct timeval beginTime, endTime;
+    struct timeval beginTime, beginTime2, endTime;
     MPI_Status status; 
     float message[20];
     float * data;
@@ -137,6 +137,7 @@ void main(int argc, char * args[]) {
         ssize_t read;
         fa = fopen("a", "r");
         fb = fopen("b", "r");
+        gettimeofday(&beginTime, NULL);
         while((read = getline(&line, &len, fa)) != -1){
             int x = 0;
             token = strtok(line, seps);
@@ -158,8 +159,8 @@ void main(int argc, char * args[]) {
         }
 
         puts("first");
-            displayMatrix(A, "A", n, n);
-            displayMatrix(B, "B", n, n);
+        displayMatrix(A, "A", n, n);
+        displayMatrix(B, "B", n, n);
         /*
         for(i=0; i<n; i++) {
             for(j=0; j<n; j++) {
@@ -178,8 +179,7 @@ void main(int argc, char * args[]) {
                 B[i][j] = a/b;
             }
         } /* end of initialization of matrix A & B */
-        gettimeofday(&beginTime, NULL);
-        
+        gettimeofday(&beginTime2, NULL);
         message[0]=m;
         message[1]=n;
         message[2]=t;
@@ -214,6 +214,8 @@ void main(int argc, char * args[]) {
         
         gettimeofday(&endTime, NULL);
         printf("Microseconds:%lu\n", (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
+        printf("Microseconds:%lu\n", (beginTime2.tv_sec-beginTime.tv_sec)*1000000+beginTime2.tv_usec-beginTime.tv_usec);
+
         /*
         if(n<=10) {
             displayMatrix(A, "A", n, n);
