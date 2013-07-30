@@ -52,6 +52,7 @@ int mmult(float** ma, float** mb, float** mc, int arow, int acol) {
     for (i=0; i<arow; i++) {
         for (j=0; j<arow; j++) {
             for(k=from; k<to; k++){
+                printf("calculation funtion: A[%i][%i], B[%i][%i]\n" , i, j, j, k);
                 mc[i][j] += ma[i][k]*mb[k][j];
             }
         }
@@ -70,15 +71,14 @@ int madd(float** ma, float** mb, int row, int col) {
     }
 }
 
-void main(int argc, char * args[]) {
+int main(int argc, char * args[]) {
     
     int i, j, k;
     float a, b;
     int ci, cj;
     int myrank;
     time_t cur = 0;
-    unsigned seed = 0;
-    struct timeval beginTime, beginTime2, endTime;
+    struct timeval beginTime, beginTime2, beginTime3, endTime;
     MPI_Status status; 
     float message[20];
     float * data;
@@ -157,7 +157,8 @@ void main(int argc, char * args[]) {
             }
             B[arr[0]][arr[1]] = arr[2];
         }
-
+        fclose(fa);
+        fclose(fb);
         puts("first");
         displayMatrix(A, "A", n, n);
         displayMatrix(B, "B", n, n);
@@ -183,25 +184,31 @@ void main(int argc, char * args[]) {
         message[0]=m;
         message[1]=n;
         message[2]=t;
+        printf("begin sending TAG_MNT.\n");
         for(i=1; i<m; i++) {
             MPI_Send(message, 20, MPI_FLOAT, i, TAG_MNT, MPI_COMM_WORLD);
         }
-        
+        printf("TAG_MNT sent.\n");
         /* Send parts of A to other corresponding processes */
+        printf("beging sending matrix A\n");
         for (i=0; i<n; i++) {
             for (j=1; j<m; j++) {
                 MPI_Send(&(A[i][j*t]), (n-j*t)<t?(n-j*t):t, MPI_FLOAT, j, TAG_AI, MPI_COMM_WORLD);
             }
         }
-        
+        printf("matrix A sent\n");
         /* Send parts of B to other corresponding processes */
+        printf("begin sending matrix B\n");
         for (i=1; i<m; i++) {
             count = ( (n-i*t)<t?(n-i*t):t )*n;
             MPI_Send(B[i*t], count, MPI_FLOAT, i, TAG_BI, MPI_COMM_WORLD);
         }
+        printf("matrix B sent.\n");
         
         /* calculate C0 */
+        printf("beging rank %i calculation.\n", myrank);
         mmult(A, B, TMP, n, t);
+        printf("end rank %i calculation.", myrank);
         //MPI_Barrier(MPI_COMM_WORLD);
 //        for(i=1; i<m; i++) {
 //            MPI_Recv(TMP[0], n*n, MPI_FLOAT, MPI_ANY_SOURCE, TAG_CI, MPI_COMM_WORLD, &status);
@@ -209,13 +216,22 @@ void main(int argc, char * args[]) {
 //            if(count==n*n)
 //                madd(C, TMP, n, n);
 //        }
+        
         MPI_Reduce(TMP[0], C[0], n*n, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
         
-        
-        gettimeofday(&endTime, NULL);
-        printf("Microseconds:%lu\n", (endTime.tv_sec-beginTime.tv_sec)*1000000+endTime.tv_usec-beginTime.tv_usec);
-        printf("Microseconds:%lu\n", (beginTime2.tv_sec-beginTime.tv_sec)*1000000+beginTime2.tv_usec-beginTime.tv_usec);
+        FILE *result = fopen("result", "w");
+        gettimeofday(&beginTime3, NULL);
+        for(i = 0; i<n; i++){
+            for(j = 0; j<n; j++)
+                fprintf(result, "%f ", C[i][j]);
+            fprintf(result, "\n");
+        }
+        fclose(result);
 
+        gettimeofday(&endTime, NULL);
+        printf("Output Microseconds:%lu\n", (endTime.tv_sec-beginTime3.tv_sec)*1000000+endTime.tv_usec-beginTime3.tv_usec);
+        printf("Input Microseconds:%lu\n", (beginTime2.tv_sec-beginTime.tv_sec)*1000000+beginTime2.tv_usec-beginTime.tv_usec);
+        printf("Communication & Calculation Microseconds:%lu\n", (beginTime3.tv_sec-beginTime2.tv_sec)*1000000+beginTime3.tv_usec-beginTime2.tv_usec);
         /*
         if(n<=10) {
             displayMatrix(A, "A", n, n);
@@ -232,7 +248,7 @@ void main(int argc, char * args[]) {
         n = (int)message[1];
         t = (int)message[2];
         if(myrank==m-1) t=(n-myrank*t)<t?(n-myrank*t):t;
-        //printf("m=%d, n=%d, t=%d\n", m, n,t);
+        //!printf("m=%d, n=%d, t=%d\n", m, n,t);
         
         createTdArray(sizeof(float), t, n, &A);
         createTdArray(sizeof(float), n, t, &B);
@@ -256,5 +272,3 @@ void main(int argc, char * args[]) {
     }
     MPI_Finalize(); 
 }
-
-
