@@ -27,6 +27,10 @@ double mat_a[NUM_ROWS_A][NUM_COLUMNS_A]; //declare input [A]
 double mat_b[NUM_ROWS_B][NUM_COLUMNS_B]; //declare input [B]
 double mat_result[NUM_ROWS_A][NUM_COLUMNS_B]; //declare output [C]
 double start_time; //hold start time
+double start1_time; // hold the start time of input part
+double start2_time; // hold the start time of the outout part
+double start3_time; // hold the start time of doing calculation
+double start4_time; // hold the end time of doing calculation
 double end_time; // hold end time
 int low_bound; //low bound of the number of rows of [A] allocated to a slave
 int upper_bound; //upper bound of the number of rows of [A] allocated to a slave
@@ -35,6 +39,7 @@ MPI_Status status; // store status of a MPI_Recv
 MPI_Request request; //capture request of a MPI_Isend
 FILE *fa;
 FILE *fb;
+FILE *fc;
 
 int main(int argc, char *argv[])
 {
@@ -44,6 +49,7 @@ int main(int argc, char *argv[])
     /* master initializes work*/
     if (rank == 0) {
         printf("this is my first rank 0 : %i\n", rank);
+        start1_time = MPI_Wtime();
         makeAB();
         start_time = MPI_Wtime();
         for (i = 1; i < size; i++) {//for each slave other than the master
@@ -73,6 +79,7 @@ int main(int argc, char *argv[])
         MPI_Recv(&upper_bound, 1, MPI_INT, 0, MASTER_TO_SLAVE_TAG + 1, MPI_COMM_WORLD, &status);
         //finally receive row portion of [A] to be processed from the master
         MPI_Recv(&mat_a[low_bound][0], (upper_bound - low_bound) * NUM_COLUMNS_A, MPI_DOUBLE, 0, MASTER_TO_SLAVE_TAG + 2, MPI_COMM_WORLD, &status);
+        start3_time = MPI_Wtime();
         for (i = low_bound; i < upper_bound; i++) {//iterate through a given set of rows of [A]
             for (j = 0; j < NUM_COLUMNS_B; j++) {//iterate through columns of [B]
                 for (k = 0; k < NUM_ROWS_B; k++) {//iterate through rows of [B]
@@ -80,6 +87,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
+        start4_time = MPI_Wtime();
         //send back the low bound first without blocking, to the master
         MPI_Isend(&low_bound, 1, MPI_INT, 0, SLAVE_TO_MASTER_TAG, MPI_COMM_WORLD, &request);
         //send the upper bound next without blocking, to the master
@@ -98,9 +106,14 @@ int main(int argc, char *argv[])
             //receive processed data from a slave
             MPI_Recv(&mat_result[low_bound][0], (upper_bound - low_bound) * NUM_COLUMNS_B, MPI_DOUBLE, i, SLAVE_TO_MASTER_TAG + 2, MPI_COMM_WORLD, &status);
         }
+        
+        //printArray();
+        start2_time = MPI_Wtime();
+        outputArray();
         end_time = MPI_Wtime();
-        printf("\nRunning Time = %f\n\n", end_time - start_time);
-        printArray();
+        printf("\nInput time = %f\n\n", start_time - start1_time);
+        printf("\nOutput time = %f\n\n", end_time - start2_time);
+
     }
     MPI_Finalize(); //finalize MPI operations
     return 0;
@@ -152,6 +165,16 @@ void makeAB()
     }
     fclose(fa);
     fclose(fb);
+}
+void outputArray()
+{
+    fc = fopen("result", "w");
+    for (i = 0; i < NUM_ROWS_A; i++) {
+        for (j = 0; j < NUM_COLUMNS_B; j++)
+            fprintf(fc, "%8.2f  ", mat_result[i][j]);
+        fprintf(fc, "%s\n", "\n");
+    }
+    fclose(fc);
 }
 void printArray()
 {
