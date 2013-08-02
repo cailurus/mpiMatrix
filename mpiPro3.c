@@ -13,11 +13,10 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <time.h>
-#define RUN_TIMES 10 //main function's running times
-#define NUM_ROWS_A 100 //rows of input [A]
-#define NUM_COLUMNS_A 100 //columns of input [A]
-#define NUM_ROWS_B 100 //rows of input [B]
-#define NUM_COLUMNS_B 100 //columns of input [B]
+#define NUM_ROWS_A 20 //rows of input [A]
+#define NUM_COLUMNS_A 20 //columns of input [A]
+#define NUM_ROWS_B 20 //rows of input [B]
+#define NUM_COLUMNS_B 20 //columns of input [B]
 #define MASTER_TO_SLAVE_TAG 1 //tag for messages sent from master to slaves
 #define SLAVE_TO_MASTER_TAG 4 //tag for messages sent from slaves to master
 void makeAB(); //makes the [A] and [B] matrixes
@@ -25,6 +24,7 @@ void printArray(); //print the content of output matrix [C];
 int rank; //process rank
 int size; //number of processes
 int i, j, k; //helper variables
+long calTime;
 double mat_a[NUM_ROWS_A][NUM_COLUMNS_A]; //declare input [A]
 double mat_b[NUM_ROWS_B][NUM_COLUMNS_B]; //declare input [B]
 double mat_result[NUM_ROWS_A][NUM_COLUMNS_B]; //declare output [C]
@@ -48,8 +48,7 @@ FILE *fd;
 
 int main(int argc, char *argv[])
 {
-    int times;
-    for (times = 0; times < RUN_TIMES; times++){
+    calTime = 0;
     MPI_Init(&argc, &argv); //initialize MPI operations
     MPI_Comm_rank(MPI_COMM_WORLD, &rank); //get the rank
     MPI_Comm_size(MPI_COMM_WORLD, &size); //get number of processes
@@ -90,15 +89,13 @@ int main(int argc, char *argv[])
         //finally receive row portion of [A] to be processed from the master
         MPI_Recv(&mat_a[low_bound][0], (upper_bound - low_bound) * NUM_COLUMNS_A, MPI_DOUBLE, 0, MASTER_TO_SLAVE_TAG + 2, MPI_COMM_WORLD, &status);
 //        start3_time = MPI_Wtime();
-        gettimeofday(&start3_time, NULL);
         for (i = low_bound; i < upper_bound; i++) {//iterate through a given set of rows of [A]
             for (j = 0; j < NUM_COLUMNS_B; j++) {//iterate through columns of [B]
                 for (k = 0; k < NUM_ROWS_B; k++) {//iterate through rows of [B]
-                    mat_result[i][j] += (mat_a[i][k] * mat_b[k][j]* mat_b[k][j]* mat_b[k][j]* mat_b[k][j]);
+                    mat_result[i][j] += (mat_a[i][k] * mat_b[k][j]);
                 }
             }
         }
-        gettimeofday(&start4_time, NULL);
         //send back the low bound first without blocking, to the master
         MPI_Isend(&low_bound, 1, MPI_INT, 0, SLAVE_TO_MASTER_TAG, MPI_COMM_WORLD, &request);
         //send the upper bound next without blocking, to the master
@@ -144,11 +141,17 @@ int main(int argc, char *argv[])
         fd = fopen("statistics", "a+");
         //fprintf(fd, "dimension is %d\n", NUM_COLUMNS_A);
         //input, calculation, output, running
-        fprintf(fd, "%lu, %lu, %lu, %lu\n", (start_time.tv_sec - start1_time.tv_sec)*1000000+start_time.tv_usec - start1_time.tv_usec, (start4_time.tv_sec - start3_time.tv_sec)*1000000+start4_time.tv_usec - start3_time.tv_usec, (end_time.tv_sec - start2_time.tv_sec)*1000000+end_time.tv_usec - start2_time.tv_usec, (end_time.tv_sec - start1_time.tv_sec)*1000000+end_time.tv_usec - start1_time.tv_usec);
+        fprintf(fd, "%lu, %lu, %lu, %lu\n", (start_time.tv_sec - start1_time.tv_sec)*1000000+start_time.tv_usec - start1_time.tv_usec,
+
+            (end_time.tv_sec - start1_time.tv_sec)*1000000+end_time.tv_usec - start1_time.tv_usec - 
+            (end_time.tv_sec - start2_time.tv_sec)*1000000-end_time.tv_usec + start2_time.tv_usec - 
+            (start_time.tv_sec - start1_time.tv_sec)*1000000-start_time.tv_usec + start1_time.tv_usec,
+
+            (end_time.tv_sec - start2_time.tv_sec)*1000000+end_time.tv_usec - start2_time.tv_usec, 
+            (end_time.tv_sec - start1_time.tv_sec)*1000000+end_time.tv_usec - start1_time.tv_usec);
         fclose(fd);
     }
     MPI_Finalize(); //finalize MPI operations
-} // end of run_times
     return 0;
 }// end of main 
 void makeAB()
