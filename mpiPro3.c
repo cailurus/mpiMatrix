@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     /* master initializes work*/
     struct timeval start_time, start1_time, start2_time, start3_time, start4_time, end_time;
     if (rank == 0) {
-        printf("this is my first rank 0 : %i\n", rank);
+        //printf("this is my first rank 0 : %i\n", rank);
         gettimeofday(&start1_time, NULL);
         //start1_time = MPI_Wtime();
         makeAB();
@@ -81,14 +81,14 @@ int main(int argc, char *argv[])
     MPI_Bcast(&mat_b, NUM_ROWS_B*NUM_COLUMNS_B, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     /* work done by slaves*/
     if (rank > 0) {
-        printf("this is my rank %i\n", rank);
+        //printf("this is my rank %i\n", rank);
         //receive low bound from the master
         MPI_Recv(&low_bound, 1, MPI_INT, 0, MASTER_TO_SLAVE_TAG, MPI_COMM_WORLD, &status);
         //next receive upper bound from the master
         MPI_Recv(&upper_bound, 1, MPI_INT, 0, MASTER_TO_SLAVE_TAG + 1, MPI_COMM_WORLD, &status);
         //finally receive row portion of [A] to be processed from the master
         MPI_Recv(&mat_a[low_bound][0], (upper_bound - low_bound) * NUM_COLUMNS_A, MPI_DOUBLE, 0, MASTER_TO_SLAVE_TAG + 2, MPI_COMM_WORLD, &status);
-//        start3_time = MPI_Wtime();
+        gettimeofday(&start3_time, NULL);
         for (i = low_bound; i < upper_bound; i++) {//iterate through a given set of rows of [A]
             for (j = 0; j < NUM_COLUMNS_B; j++) {//iterate through columns of [B]
                 for (k = 0; k < NUM_ROWS_B; k++) {//iterate through rows of [B]
@@ -96,6 +96,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
+        gettimeofday(&start4_time, NULL);
         //send back the low bound first without blocking, to the master
         MPI_Isend(&low_bound, 1, MPI_INT, 0, SLAVE_TO_MASTER_TAG, MPI_COMM_WORLD, &request);
         //send the upper bound next without blocking, to the master
@@ -105,7 +106,7 @@ int main(int argc, char *argv[])
     }
     /* master gathers processed work*/
     if (rank == 0) {
-        printf("this is my second rank 0 : %i\n", rank);
+        //printf("this is my second rank 0 : %i\n", rank);
         for (i = 1; i < size; i++) {// untill all slaves have handed back the processed data
             //receive low bound from a slave
             MPI_Recv(&low_bound, 1, MPI_INT, i, SLAVE_TO_MASTER_TAG, MPI_COMM_WORLD, &status);
@@ -141,6 +142,7 @@ int main(int argc, char *argv[])
         fd = fopen("statistics", "a+");
         //fprintf(fd, "dimension is %d\n", NUM_COLUMNS_A);
         //input, calculation, output, running
+
         fprintf(fd, "%lu, %lu, %lu, %lu\n", (start_time.tv_sec - start1_time.tv_sec)*1000000+start_time.tv_usec - start1_time.tv_usec,
 
             (end_time.tv_sec - start1_time.tv_sec)*1000000+end_time.tv_usec - start1_time.tv_usec - 
@@ -149,9 +151,15 @@ int main(int argc, char *argv[])
 
             (end_time.tv_sec - start2_time.tv_sec)*1000000+end_time.tv_usec - start2_time.tv_usec, 
             (end_time.tv_sec - start1_time.tv_sec)*1000000+end_time.tv_usec - start1_time.tv_usec);
-        fclose(fd);
+        //fclose(fd);
     }
     MPI_Finalize(); //finalize MPI operations
+    //printf("%i\n", rank);
+    //fprintf(fd, "%lu\n", (start4_time.tv_sec - start3_time.tv_sec)*1000000+start4_time.tv_usec - start3_time.tv_usec);
+    if(rank != 0)
+        printf("%lu\n", (start4_time.tv_sec - start3_time.tv_sec)*1000000+start4_time.tv_usec - start3_time.tv_usec);
+    //
+    
     return 0;
 }// end of main 
 void makeAB()
