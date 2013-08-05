@@ -13,10 +13,10 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <time.h>
-#define NUM_ROWS_A 1000 //rows of input [A]
-#define NUM_COLUMNS_A 1000 //columns of input [A]
-#define NUM_ROWS_B 1000 //rows of input [B]
-#define NUM_COLUMNS_B 1000 //columns of input [B]
+#define NUM_ROWS_A 2000 //rows of input [A]
+#define NUM_COLUMNS_A 2000 //columns of input [A]
+#define NUM_ROWS_B 2000 //rows of input [B]
+#define NUM_COLUMNS_B 2000 //columns of input [B]
 #define MASTER_TO_SLAVE_TAG 1 //tag for messages sent from master to slaves
 #define SLAVE_TO_MASTER_TAG 4 //tag for messages sent from slaves to master
 void makeAB(); //makes the [A] and [B] matrixes
