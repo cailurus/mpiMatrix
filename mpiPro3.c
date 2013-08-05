@@ -13,10 +13,10 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <time.h>
-#define NUM_ROWS_A 20 //rows of input [A]
-#define NUM_COLUMNS_A 20 //columns of input [A]
-#define NUM_ROWS_B 20 //rows of input [B]
-#define NUM_COLUMNS_B 20 //columns of input [B]
+#define NUM_ROWS_A 50 //rows of input [A]
+#define NUM_COLUMNS_A 50 //columns of input [A]
+#define NUM_ROWS_B 50 //rows of input [B]
+#define NUM_COLUMNS_B 50 //columns of input [B]
 #define MASTER_TO_SLAVE_TAG 1 //tag for messages sent from master to slaves
 #define SLAVE_TO_MASTER_TAG 4 //tag for messages sent from slaves to master
 void makeAB(); //makes the [A] and [B] matrixes
@@ -45,6 +45,7 @@ FILE *fa;
 FILE *fb;
 FILE *fc;
 FILE *fd;
+FILE *ff;
 
 int main(int argc, char *argv[])
 {
@@ -151,15 +152,16 @@ int main(int argc, char *argv[])
 
             (end_time.tv_sec - start2_time.tv_sec)*1000000+end_time.tv_usec - start2_time.tv_usec, 
             (end_time.tv_sec - start1_time.tv_sec)*1000000+end_time.tv_usec - start1_time.tv_usec);
-        //fclose(fd);
+        fclose(fd);
     }
     MPI_Finalize(); //finalize MPI operations
     //printf("%i\n", rank);
-    //fprintf(fd, "%lu\n", (start4_time.tv_sec - start3_time.tv_sec)*1000000+start4_time.tv_usec - start3_time.tv_usec);
-    if(rank != 0)
-        printf("%lu\n", (start4_time.tv_sec - start3_time.tv_sec)*1000000+start4_time.tv_usec - start3_time.tv_usec);
-    //
-    
+    //fprintf(fd, "%lu\n", (start4_tlsime.tv_sec - start3_time.tv_sec)*1000000+start4_time.tv_usec - start3_time.tv_usec);
+    if(rank != 0){
+        ff = fopen("calTime", "a+");
+        fprintf(ff, "%lu\n", (start4_time.tv_sec - start3_time.tv_sec)*1000000+start4_time.tv_usec - start3_time.tv_usec);
+        fclose(ff);
+    }
     return 0;
 }// end of main 
 void makeAB()
